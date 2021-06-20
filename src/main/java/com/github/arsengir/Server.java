@@ -7,11 +7,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
-    private static final int PORT = 9999;
     private static final int COUNT_THREADS = 64;
 
-    public Server() {
-        try (final ServerSocket serverSocket = new ServerSocket(PORT)) {
+    public void listen (int port) {
+        try (final ServerSocket serverSocket = new ServerSocket(port)) {
             final ExecutorService threadPool = Executors.newFixedThreadPool(COUNT_THREADS);
             while (true) {
                 final Socket socket = serverSocket.accept();
