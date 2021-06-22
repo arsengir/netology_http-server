@@ -43,16 +43,20 @@ public class Server {
             mapHandlers.get(request.getMethod()).get(request.getPath()).handle(request, responseStream);
         } else {
             try {
-                responseStream.write((
-                        "HTTP/1.1 404 Not Found\r\n" +
-                                "Content-Length: 0\r\n" +
-                                "Connection: close\r\n" +
-                                "\r\n"
-                ).getBytes());
-                responseStream.flush();
+                badRequest(responseStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void badRequest(BufferedOutputStream out) throws IOException {
+        out.write((
+                "HTTP/1.1 400 Bad Request\r\n" +
+                        "Content-Length: 0\r\n" +
+                        "Connection: close\r\n" +
+                        "\r\n"
+        ).getBytes());
+        out.flush();
     }
 }
