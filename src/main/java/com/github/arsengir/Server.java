@@ -43,7 +43,13 @@ public class Server {
             mapHandlers.get(request.getMethod()).get(request.getPath()).handle(request, responseStream);
         } else {
             try {
-                badRequest(responseStream);
+                responseStream.write((
+                        "HTTP/1.1 404 Not Found\r\n" +
+                                "Content-Length: 0\r\n" +
+                                "Connection: close\r\n" +
+                                "\r\n"
+                ).getBytes());
+                responseStream.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
