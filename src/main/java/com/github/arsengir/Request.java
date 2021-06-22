@@ -10,9 +10,10 @@ public class Request {
 
     private final String method;
     private final String path;
-    private List<NameValuePair> params;
+    private List<NameValuePair> queryParams;
     private List<String> headers;
     private String body;
+    private List<NameValuePair> postParams;
 
     public Request(String method, String path) {
         this.method = method;
@@ -27,8 +28,12 @@ public class Request {
         this.body = body;
     }
 
-    public void setParams(List<NameValuePair> params) {
-        this.params = params;
+    public void setQueryParams(List<NameValuePair> params) {
+        this.queryParams = params;
+    }
+
+    public void setPostParams(List<NameValuePair> postParams) {
+        this.postParams = postParams;
     }
 
     public String getMethod() {
@@ -47,8 +52,12 @@ public class Request {
         return body;
     }
 
-    public List<NameValuePair> getParams() {
-        return params;
+    public List<NameValuePair> getQueryParams() {
+        return queryParams;
+    }
+
+    public List<NameValuePair> getPostParams() {
+        return postParams;
     }
 
     public Optional<String> getHeader(String header) {
@@ -59,8 +68,15 @@ public class Request {
                 .findFirst();
     }
 
-    public List<String> getParam(String param) {
-        return params.stream()
+    public List<String> getQueryParam(String param) {
+        return queryParams.stream()
+                .filter(o -> o.getName().startsWith(param))
+                .map(NameValuePair::getValue)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getPostParam(String param) {
+        return postParams.stream()
                 .filter(o -> o.getName().startsWith(param))
                 .map(NameValuePair::getValue)
                 .collect(Collectors.toList());
@@ -71,9 +87,10 @@ public class Request {
         return "Request{" +
                 "method='" + method + '\'' +
                 ", path='" + path + '\'' +
-                ", params=" + params +
+                ", queryParams=" + queryParams +
                 ", headers=" + headers +
                 ", body='" + body + '\'' +
+                ", postParams=" + postParams +
                 '}';
     }
 }
