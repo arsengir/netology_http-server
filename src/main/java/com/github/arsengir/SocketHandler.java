@@ -1,7 +1,12 @@
 package com.github.arsengir;
 
+import org.apache.http.client.utils.URLEncodedUtils;
+
 import java.io.*;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,12 +30,12 @@ public class SocketHandler implements Runnable {
             if (request == null) return;
             server.runHandler(request, out);
 
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
     }
 
-    private Request getRequest(BufferedInputStream in, BufferedOutputStream out) throws IOException {
+    private Request getRequest(BufferedInputStream in, BufferedOutputStream out) throws IOException, URISyntaxException {
         // лимит на request line + заголовки
         final int limit = 4096;
 
@@ -59,7 +64,10 @@ public class SocketHandler implements Runnable {
             server.badRequest(out);
             return null;
         }
-        Request request = new Request(requestLine[0], requestLine[1]);
+
+        final URI uri = new URI(requestLine[1]);
+        Request request = new Request(requestLine[0], uri.getPath());
+        request.setParams(URLEncodedUtils.parse(uri, StandardCharsets.UTF_8));
 
         //ищем заголовки
         final byte[] headersDelimiter = new byte[]{'\r', '\n', '\r', '\n'};
