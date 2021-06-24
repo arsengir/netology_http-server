@@ -45,9 +45,9 @@ public class SocketHandler implements Runnable {
         final int read = in.read(buffer);
 
         //ищем request line
-        final byte[] requestLineDelimiter = new byte[]{'\r','\n'};
+        final byte[] requestLineDelimiter = new byte[]{'\r', '\n'};
         final int requestLineEnd = indexOf(buffer, requestLineDelimiter, 0, read);
-        if (requestLineEnd == -1){
+        if (requestLineEnd == -1) {
             server.badRequest(out);
             return null;
         }
@@ -67,7 +67,7 @@ public class SocketHandler implements Runnable {
 
         final URI uri = new URI(requestLine[1]);
         Request request = new Request(requestLine[0], uri.getPath());
-        request.setParams(URLEncodedUtils.parse(uri, StandardCharsets.UTF_8));
+        request.setQueryParams(URLEncodedUtils.parse(uri, StandardCharsets.UTF_8));
 
         //ищем заголовки
         final byte[] headersDelimiter = new byte[]{'\r', '\n', '\r', '\n'};
@@ -95,9 +95,17 @@ public class SocketHandler implements Runnable {
             if (contentLength.isPresent()) {
                 final int length = Integer.parseInt(contentLength.get());
                 final byte[] bodyBytes = in.readNBytes(length);
-
                 request.setBody(new String(bodyBytes));
             }
+            // вычитываем Content-Type, чтобы понять есть ли в body параметры
+            final Optional<String> contentType = request.getHeader("Content-Type");
+            if (contentType.isPresent()) {
+                final String type = contentType.get();
+                if (type.equals("application/x-www-form-urlencoded")) {
+                    request.setPostParams(URLEncodedUtils.parse(request.getBody(), StandardCharsets.UTF_8));
+                }
+            }
+
         }
         System.out.println(request);
         return request;
